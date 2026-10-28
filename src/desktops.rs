@@ -88,21 +88,6 @@ pub fn hot_corner() {
     send_chord(&[VK_LWIN], VK_TAB);
 }
 
-/// Stop the Start menu opening when the user lets go of Win after Win+scroll.
-///
-/// Windows opens Start when Win is pressed and released with no other key in
-/// between, and a swallowed wheel event doesn't count. Tapping an unassigned
-/// key while Win is down makes the release look like the end of a shortcut.
-/// This is the same trick AutoHotkey uses.
-pub fn mask_win_key() {
-    if !modifier_down(VK_LWIN) {
-        return;
-    }
-    let unassigned = VIRTUAL_KEY(0xE8);
-    let inputs = [key_input(unassigned, false), key_input(unassigned, true)];
-    unsafe { SendInput(&inputs, std::mem::size_of::<INPUT>() as i32) };
-}
-
 /// Press `modifiers` + `key`, leaving the modifier state as we found it.
 ///
 /// Modifiers the user is already holding (e.g. Win from Win+PgDn) aren't
@@ -137,7 +122,7 @@ fn modifier_down(vk: VIRTUAL_KEY) -> bool {
     }
 }
 
-fn key_input(vk: VIRTUAL_KEY, up: bool) -> INPUT {
+pub fn key_input(vk: VIRTUAL_KEY, up: bool) -> INPUT {
     let mut flags = KEYBD_EVENT_FLAGS::default();
     if up {
         flags |= KEYEVENTF_KEYUP;

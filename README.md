@@ -32,7 +32,7 @@ The exe icon is `assets/gnomecuts.ico`, which is embedded at build time. To chan
 - **Switching** sends Windows' own Ctrl+Win+Left/Right, so you get the normal animation.
 - **Moving windows** uses [winvd](https://crates.io/crates/winvd), which calls Windows' undocumented virtual desktop COM interfaces. Microsoft changes these interfaces between Windows builds, so a Windows update can break moving windows until winvd is updated. Switching desktops, the hot corner and scrolling don't use these interfaces.
 - **Button scrolling** uses UI Automation to find the Start and Task View buttons on each Windows 11 taskbar. A background thread keeps their positions up to date, because these buttons move on a centred taskbar when apps open and close. If you've hidden the Task View button in taskbar settings, only the Start button responds.
-- A low-level mouse hook watches for the hot corner, for scrolling over these buttons, and for scrolling while Win is held. After Win+scroll it taps an unassigned key so that releasing Win doesn't open the Start menu.
+- A low-level mouse hook watches for the hot corner, for scrolling over these buttons, and for scrolling while Win is held. After Win+scroll, a low-level keyboard hook holds back the Win key-up and sends an unassigned key just before it, so releasing Win doesn't open the Start menu.
 
 ## Limitations
 

@@ -10,7 +10,7 @@ use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LWIN, VK_RWIN};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
-use crate::{main_hwnd, settings, taskbar_buttons, WM_APP_HOT_CORNER, WM_APP_MASK_WIN, WM_APP_SCROLL};
+use crate::{main_hwnd, settings, taskbar_buttons, win_key, WM_APP_HOT_CORNER, WM_APP_SCROLL};
 
 /// Size of the hot corner, in pixels, from the main display's top-left.
 const CORNER_SIZE: i32 = 4;
@@ -110,7 +110,7 @@ unsafe fn on_wheel(info: &MSLLHOOKSTRUCT) -> bool {
         return false;
     }
     if win_held {
-        let _ = PostMessageW(main_hwnd(), WM_APP_MASK_WIN, WPARAM(0), LPARAM(0));
+        win_key::mask_next_release();
     }
 
     let delta = (info.mouseData >> 16) as i16 as i32;
