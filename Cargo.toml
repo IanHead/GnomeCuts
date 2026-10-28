@@ -1,6 +1,6 @@
 [package]
 name = "gnomecuts"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "GNOME-style workspace shortcuts for Windows 11"
 license = "MIT"
