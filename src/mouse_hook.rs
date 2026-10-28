@@ -1,4 +1,4 @@
-//! Low-level mouse hook for the hot corner and scrolling over taskbar buttons.
+//! Low-level mouse hook for the hot corner, scrolling over taskbar buttons and Win+scroll.
 //!
 //! The hook runs on the UI thread and must return quickly, so it only does
 //! cheap geometry checks and posts messages; the real work happens in wnd_proc.
@@ -7,9 +7,10 @@ use std::sync::atomic::{AtomicBool, AtomicI32, AtomicIsize, AtomicU32, Ordering}
 
 use windows::Win32::Foundation::{LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LWIN, VK_RWIN};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
-use crate::{main_hwnd, settings, taskbar_buttons, WM_APP_HOT_CORNER, WM_APP_SCROLL};
+use crate::{main_hwnd, settings, taskbar_buttons, WM_APP_HOT_CORNER, WM_APP_MASK_WIN, WM_APP_SCROLL};
 
 /// Size of the hot corner, in pixels, from the main display's top-left.
 const CORNER_SIZE: i32 = 4;
@@ -101,10 +102,15 @@ fn hits_hot_corner(prev: POINT, pt: POINT) -> bool {
     from_main_display && pt.x < CORNER_SIZE && pt.y < CORNER_SIZE
 }
 
-/// Returns true if the event was over the Start or Task View button and should be swallowed.
+/// Returns true if the event switches desktops and should be swallowed: it was
+/// over the Start or Task View button, or anywhere while Win is held.
 unsafe fn on_wheel(info: &MSLLHOOKSTRUCT) -> bool {
-    if !settings::button_scroll() || !taskbar_buttons::contains(info.pt) {
+    let win_held = settings::win_scroll() && win_down();
+    if !win_held && !(settings::button_scroll() && taskbar_buttons::contains(info.pt)) {
         return false;
+    }
+    if win_held {
+        let _ = PostMessageW(main_hwnd(), WM_APP_MASK_WIN, WPARAM(0), LPARAM(0));
     }
 
     let delta = (info.mouseData >> 16) as i16 as i32;
@@ -123,6 +129,10 @@ unsafe fn on_wheel(info: &MSLLHOOKSTRUCT) -> bool {
         }
     }
     true
+}
+
+unsafe fn win_down() -> bool {
+    GetAsyncKeyState(VK_LWIN.0 as i32) < 0 || GetAsyncKeyState(VK_RWIN.0 as i32) < 0
 }
 
 #[cfg(test)]

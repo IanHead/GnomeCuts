@@ -11,13 +11,16 @@ const RUN_VALUE: PCWSTR = w!("GnomeCuts");
 const HOT_CORNER_VALUE: PCWSTR = w!("HotCorner");
 // Named from when this only covered the Start button; kept so existing settings carry over.
 const BUTTON_SCROLL_VALUE: PCWSTR = w!("StartScroll");
+const WIN_SCROLL_VALUE: PCWSTR = w!("WinScroll");
 
 static HOT_CORNER: AtomicBool = AtomicBool::new(true);
 static BUTTON_SCROLL: AtomicBool = AtomicBool::new(true);
+static WIN_SCROLL: AtomicBool = AtomicBool::new(true);
 
 pub fn load() {
     HOT_CORNER.store(read_bool(HOT_CORNER_VALUE, true), Ordering::Relaxed);
     BUTTON_SCROLL.store(read_bool(BUTTON_SCROLL_VALUE, true), Ordering::Relaxed);
+    WIN_SCROLL.store(read_bool(WIN_SCROLL_VALUE, true), Ordering::Relaxed);
 }
 
 pub fn hot_corner() -> bool {
@@ -36,6 +39,15 @@ pub fn button_scroll() -> bool {
 pub fn set_button_scroll(on: bool) {
     BUTTON_SCROLL.store(on, Ordering::Relaxed);
     write_bool(BUTTON_SCROLL_VALUE, on);
+}
+
+pub fn win_scroll() -> bool {
+    WIN_SCROLL.load(Ordering::Relaxed)
+}
+
+pub fn set_win_scroll(on: bool) {
+    WIN_SCROLL.store(on, Ordering::Relaxed);
+    write_bool(WIN_SCROLL_VALUE, on);
 }
 
 pub fn autostart() -> bool {

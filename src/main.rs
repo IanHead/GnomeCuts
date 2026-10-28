@@ -24,8 +24,11 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 pub const WM_APP_TRAY: u32 = WM_APP + 1;
 /// Posted by the mouse hook when the cursor hits a hot corner.
 pub const WM_APP_HOT_CORNER: u32 = WM_APP + 2;
-/// Posted by the mouse hook on a wheel notch over the Start or Task View button; wParam is the direction (-1/+1).
+/// Posted by the mouse hook on a wheel notch over the Start or Task View button, or
+/// anywhere while Win is held; wParam is the direction (-1/+1).
 pub const WM_APP_SCROLL: u32 = WM_APP + 3;
+/// Posted by the mouse hook when it swallows a wheel event while Win is held.
+pub const WM_APP_MASK_WIN: u32 = WM_APP + 4;
 
 static MAIN_HWND: AtomicIsize = AtomicIsize::new(0);
 static TASKBAR_CREATED: AtomicU32 = AtomicU32::new(0);
@@ -123,6 +126,7 @@ unsafe extern "system" fn wnd_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam:
         WM_COMMAND => tray::handle_command(hwnd, (wparam.0 & 0xffff) as u16),
         WM_APP_HOT_CORNER => desktops::hot_corner(),
         WM_APP_SCROLL => desktops::switch_relative(wparam.0 as isize as i32),
+        WM_APP_MASK_WIN => desktops::mask_win_key(),
         WM_TIMER if wparam.0 == desktops::TIMER_REFOCUS => desktops::refocus(hwnd),
         WM_DISPLAYCHANGE | WM_SETTINGCHANGE => taskbar_buttons::request_refresh(),
         WM_DESTROY => {

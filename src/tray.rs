@@ -14,6 +14,7 @@ const ID_HOT_CORNER: u16 = 100;
 const ID_BUTTON_SCROLL: u16 = 101;
 const ID_AUTOSTART: u16 = 102;
 const ID_EXIT: u16 = 103;
+const ID_WIN_SCROLL: u16 = 104;
 
 const BLUE: u32 = 0xFF35_84E4;
 const GREY: u32 = 0xFF9A_9996;
@@ -59,6 +60,12 @@ pub fn show_menu(hwnd: HWND) {
             ID_BUTTON_SCROLL as usize,
             w!("Scroll on Start and Task View buttons"),
         );
+        let _ = AppendMenuW(
+            menu,
+            MF_STRING | check(settings::win_scroll()),
+            ID_WIN_SCROLL as usize,
+            w!("Scroll anywhere while holding Win"),
+        );
         let _ = AppendMenuW(menu, MF_STRING | check(settings::autostart()), ID_AUTOSTART as usize, w!("Start with Windows"));
         let _ = AppendMenuW(menu, MF_SEPARATOR, 0, None);
         let _ = AppendMenuW(menu, MF_STRING, ID_EXIT as usize, w!("Exit"));
@@ -76,6 +83,7 @@ pub fn handle_command(hwnd: HWND, id: u16) {
     match id {
         ID_HOT_CORNER => settings::set_hot_corner(!settings::hot_corner()),
         ID_BUTTON_SCROLL => settings::set_button_scroll(!settings::button_scroll()),
+        ID_WIN_SCROLL => settings::set_win_scroll(!settings::win_scroll()),
         ID_AUTOSTART => settings::set_autostart(!settings::autostart()),
         ID_EXIT => unsafe {
             let _ = DestroyWindow(hwnd);
