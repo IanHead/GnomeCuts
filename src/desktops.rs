@@ -152,19 +152,34 @@ fn foreground_app_window() -> Option<HWND> {
 /// The desktop, taskbars and Task View. Task View is fullscreen, so without
 /// this the hot corner would treat it as a fullscreen app and refuse to close it.
 fn is_shell_window(hwnd: HWND) -> bool {
-    let mut buf = [0u16; 64];
-    let len = unsafe { GetClassNameW(hwnd, &mut buf) } as usize;
-    let class = String::from_utf16_lossy(&buf[..len]);
+    let class = class_name(hwnd);
     matches!(
         class.as_str(),
         "Progman"
             | "WorkerW"
             | "Shell_TrayWnd"
             | "Shell_SecondaryTrayWnd"
-            // Task View on Windows 11 24H2+, and on earlier builds.
-            | "XamlExplorerHostIslandWindow"
-            | "MultitaskingViewFrame"
-    )
+    ) || is_task_view_class(&class)
+}
+
+fn class_name(hwnd: HWND) -> String {
+    let mut buf = [0u16; 64];
+    let len = unsafe { GetClassNameW(hwnd, &mut buf) } as usize;
+    String::from_utf16_lossy(&buf[..len])
+}
+
+/// Task View on Windows 11 24H2+, and on earlier builds.
+fn is_task_view_class(class: &str) -> bool {
+    matches!(class, "XamlExplorerHostIslandWindow" | "MultitaskingViewFrame")
+}
+
+/// Whether Task View has focus. On 24H2+ Alt+Tab uses the same window class,
+/// so this is false while Alt is held.
+pub fn task_view_open() -> bool {
+    unsafe {
+        let hwnd = GetForegroundWindow();
+        !hwnd.is_invalid() && !is_down(VK_MENU) && is_task_view_class(&class_name(hwnd))
+    }
 }
 
 unsafe fn foreground_is_fullscreen() -> bool {

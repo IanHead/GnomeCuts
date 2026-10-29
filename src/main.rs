@@ -26,7 +26,7 @@ pub const WM_APP_TRAY: u32 = WM_APP + 1;
 /// Posted by the mouse hook when the cursor hits a hot corner.
 pub const WM_APP_HOT_CORNER: u32 = WM_APP + 2;
 /// Posted by the mouse hook on a wheel notch over the Start or Task View button, or
-/// anywhere while Win is held; wParam is the direction (-1/+1).
+/// anywhere while Win is held or Task View is open; wParam is the direction (-1/+1).
 pub const WM_APP_SCROLL: u32 = WM_APP + 3;
 
 static MAIN_HWND: AtomicIsize = AtomicIsize::new(0);

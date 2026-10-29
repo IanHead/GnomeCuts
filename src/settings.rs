@@ -12,15 +12,18 @@ const HOT_CORNER_VALUE: PCWSTR = w!("HotCorner");
 // Named from when this only covered the Start button; kept so existing settings carry over.
 const BUTTON_SCROLL_VALUE: PCWSTR = w!("StartScroll");
 const WIN_SCROLL_VALUE: PCWSTR = w!("WinScroll");
+const TASK_VIEW_SCROLL_VALUE: PCWSTR = w!("TaskViewScroll");
 
 static HOT_CORNER: AtomicBool = AtomicBool::new(true);
 static BUTTON_SCROLL: AtomicBool = AtomicBool::new(true);
 static WIN_SCROLL: AtomicBool = AtomicBool::new(true);
+static TASK_VIEW_SCROLL: AtomicBool = AtomicBool::new(true);
 
 pub fn load() {
     HOT_CORNER.store(read_bool(HOT_CORNER_VALUE, true), Ordering::Relaxed);
     BUTTON_SCROLL.store(read_bool(BUTTON_SCROLL_VALUE, true), Ordering::Relaxed);
     WIN_SCROLL.store(read_bool(WIN_SCROLL_VALUE, true), Ordering::Relaxed);
+    TASK_VIEW_SCROLL.store(read_bool(TASK_VIEW_SCROLL_VALUE, true), Ordering::Relaxed);
 }
 
 pub fn hot_corner() -> bool {
@@ -48,6 +51,15 @@ pub fn win_scroll() -> bool {
 pub fn set_win_scroll(on: bool) {
     WIN_SCROLL.store(on, Ordering::Relaxed);
     write_bool(WIN_SCROLL_VALUE, on);
+}
+
+pub fn task_view_scroll() -> bool {
+    TASK_VIEW_SCROLL.load(Ordering::Relaxed)
+}
+
+pub fn set_task_view_scroll(on: bool) {
+    TASK_VIEW_SCROLL.store(on, Ordering::Relaxed);
+    write_bool(TASK_VIEW_SCROLL_VALUE, on);
 }
 
 pub fn autostart() -> bool {

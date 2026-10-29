@@ -1,4 +1,5 @@
-//! Low-level mouse hook for the hot corner, scrolling over taskbar buttons and Win+scroll.
+//! Low-level mouse hook for the hot corner, scrolling over taskbar buttons, Win+scroll
+//! and scrolling in Task View.
 //!
 //! The hook runs on the UI thread and must return quickly, so it only does
 //! cheap geometry checks and posts messages; the real work happens in wnd_proc.
@@ -10,7 +11,7 @@ use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LWIN, VK_RWIN};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
-use crate::{main_hwnd, settings, taskbar_buttons, win_key, WM_APP_HOT_CORNER, WM_APP_SCROLL};
+use crate::{desktops, main_hwnd, settings, taskbar_buttons, win_key, WM_APP_HOT_CORNER, WM_APP_SCROLL};
 
 /// Size of the hot corner, in pixels, from the main display's top-left.
 const CORNER_SIZE: i32 = 4;
@@ -103,10 +104,13 @@ fn hits_hot_corner(prev: POINT, pt: POINT) -> bool {
 }
 
 /// Returns true if the event switches desktops and should be swallowed: it was
-/// over the Start or Task View button, or anywhere while Win is held.
+/// over the Start or Task View button, or anywhere while Win is held or Task View is open.
 unsafe fn on_wheel(info: &MSLLHOOKSTRUCT) -> bool {
     let win_held = settings::win_scroll() && win_down();
-    if !win_held && !(settings::button_scroll() && taskbar_buttons::contains(info.pt)) {
+    if !win_held
+        && !(settings::button_scroll() && taskbar_buttons::contains(info.pt))
+        && !(settings::task_view_scroll() && desktops::task_view_open())
+    {
         return false;
     }
     if win_held {
